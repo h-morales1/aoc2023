@@ -1,80 +1,21 @@
 #!/usr/bin/env ruby
 
-file = File.open("input")
+file = File.open('input')
 
 nums = [
-  "zero",
-  "one",
-  "two",
-  "three",
-  "four",
-  "five",
-  "six",
-  "seven",
-  "eight",
-  "nine"
+  'zero',
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+  'nine'
 ]
 
 file_data = file.readlines.map(&:chomp)
-#
-sum = 0 # final sum
-def proc_line( line )
-  first_n = line[/[0-9]/, 0] # extract first number
-  second_n = line.reverse[/[0-9]/,0] # extract last number
-  num = (first_n + second_n).to_i # combine strings into 1 num, conv to int
-
-  puts  "#{first_n}#{second_n}"
-
-  return num
-end
-
-## find first num(int)
-## find first num(string) -Iterate through array of strings
-## compare index, lower is real first
-##
-## iterate through array of strings
-## check if substring is in text
-## check its index, if it is lower than int_indx we found a winner
-
-# extract first number(string or num)
-def get_num1(line, nums)
-  first_n_str = line[/[0-9]/, 0] # extract first number
-  first_n_str_indx = line.index(first_n_str) # get index of number
-
-  for num in nums
-    first_n_int = line[/#{num}/,0] # get first number int
-    if !first_n_int.nil?
-      first_n_int_indx = line.index(first_n_int) # get its index
-
-      if first_n_int_indx < first_n_str_indx && !first_n_int_indx.nil?
-        return nums.index(num)
-      end
-
-    end
-
-  end
-  return first_n_str.to_i
-end
-
-def get_num2(line, nums)
-  second_n_str = line.reverse[/[0-9]/, 0] # extract last number
-  second_n_str_indx = line.index(second_n_str) # get the index of number
-
-  # try and find any matches to strings in nums
-  for num in nums
-    reversed = num.reverse
-    second_n_int = line.reverse[/#{reversed}/, 0]
-    if !second_n_int.nil?
-      second_n_int_indx = line.reverse.index(second_n_int) # get its index
-
-      if second_n_int_indx < second_n_str_indx && !second_n_int_indx.nil?
-        return nums.index(num)
-      end
-    end
-  end
-  return second_n_str.to_i
-end
-
 # extract num word index for first word
 def get_num_word_indx(line, nums)
   indxs = []
@@ -100,7 +41,6 @@ def get_second_num_word_indx(line, nums)
     unless num_word.nil?
       num_word_index = line.index(num_word) # index of word number we found
       indxs.push(num_word_index) # store index
-      # TODO: figure out a way to compare old and new indx
     end
   end
   min = indxs.min # get the smallest index
@@ -110,36 +50,66 @@ end
 
 def get_first_word(line, nums)
   indxs = []
+  words_found = []
   for num in nums
     num_word = line[/#{num}/, 0] # search for substring
     unless num_word.nil?
       num_word_index = line.index(num_word)
       indxs.push(num_word_index)
-      # TODO: figure out a way to compare old and new indx
+      words_found[num_word_index] = num
     end
   end
-  min = indxs.min
-
+  min = indxs.min # get the word that shows up first, index
+  number_word = words_found[min] # the actual word
+  converted = nums.index(number_word) # convert word into its number equivalent
 end
 
 def process_line(line, nums)
   first_num_indx = line.index(line[/[0-9]/])
   first_num_word_indx = get_num_word_indx(line, nums)
 
+  first_num = 0
+
   if first_num_word_indx.nil?
     puts "#{line}, has int first"
+    # call default get_num1
+    first_num = line[/[0-9]/]
   elsif first_num_indx < first_num_word_indx
     puts "#{line}, has int first"
+    # call default get_num1
+    first_num = line[/[0-9]/]
   else
     puts "#{line}, has word first"
+    first_num = get_first_word(line, nums)
+    # call function to get word
   end
+
+  # handle other end of line
+  reversed_line = line.reverse
+  reversed_nums = [] # store reverse of number strings
+  nums.each { |num| reversed_nums.push(num.reverse) } # reverse number words
+  second_num_indx = reversed_line.index(reversed_line[/[0-9]/])
+  second_num_word_indx = get_num_word_indx(reversed_line, reversed_nums)
+
+  second_num = 0
+
+  if second_num_word_indx.nil?
+    # call default get_num1
+    second_num = reversed_line[/[0-9]/]
+  elsif second_num_indx < second_num_word_indx
+    # call defulat get_num1
+    second_num = reversed_line[/[0-9]/]
+  else
+    # call funct to get word
+    second_num = get_first_word(reversed_line, reversed_nums)
+  end
+
+  both_num = "#{first_num}#{second_num}"
+  puts "final: #{both_num}"
+  final_num = both_num.to_i
 end
 
-# for line in file_data
-#  sum += proc_line line
-# end
+total = 0
+file_data.each { |line| total += process_line line, nums }
 
-file_data.each { |line| process_line line, nums }
-
-# puts "Sum is: #{sum}"
-# File.foreach("input") { |line| proc_line line, sum }
+puts "total: #{total}"
