@@ -1,8 +1,5 @@
 #!/usr/bin/env ruby
 module D1
-#  file = File.open("input") # puzzle input
-# TODO: handle possibility of no ints or no words being found, also duplicates
-  #number_words = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
   def self.get_first_num(line)
     num = line[/[0-9]/]
     return num
